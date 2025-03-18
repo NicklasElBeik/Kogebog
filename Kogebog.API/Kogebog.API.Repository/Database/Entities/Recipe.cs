@@ -10,7 +10,7 @@ namespace Kogebog.API.Repository.Database.Entities
     {
         public Guid Id { get; set; }
         public required string Name { get; set; }
-        public int AmountOfPeople { get; set; }
+        public int AmountOfServings { get; set; }
         public byte[]? Image { get; set; }
         public Guid ProfileId { get; set; }
         public Profile? Profile { get; set; }

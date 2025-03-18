@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Kogebog.API.Repository\Kogebog.API.Repository.csproj" />
+    <ProjectReference Include="..\Kogebog.API.Service\Kogebog.API.Service.csproj" />
   </ItemGroup>
 
 </Project>
