@@ -13,6 +13,14 @@ namespace Kogebog.API.ASP
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("Allow",
+                    builder => builder.AllowAnyOrigin()
+                                      .AllowAnyMethod()
+                                      .AllowAnyHeader());
+            });
+
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -54,6 +62,7 @@ namespace Kogebog.API.ASP
 
             app.UseAuthorization();
 
+            app.UseCors("Allow");
 
             app.MapControllers();
 

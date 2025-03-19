@@ -68,6 +68,26 @@ namespace Kogebog.API.ASP.Controllers
             }
         }
 
+        [HttpGet("recipe/{recipeId}")]
+        public async Task<IActionResult> FindByRecipeId([FromRoute] Guid recipeId)
+        {
+            try
+            {
+                var recipeIngredientResponse = await _recipeIngredientService.GetByRecipeIdAsync(recipeId);
+
+                if (recipeIngredientResponse == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(recipeIngredientResponse);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPut("{recipeIngredientId}")]
         public async Task<IActionResult> UpdateById([FromRoute] Guid recipeIngredientId, [FromBody] RecipeIngredientRequest updateRecipeIngredient)
         {

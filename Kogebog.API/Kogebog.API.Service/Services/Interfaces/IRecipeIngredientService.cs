@@ -11,6 +11,7 @@ namespace Kogebog.API.Service.Services.Interfaces
     {
         Task<IEnumerable<RecipeIngredientResponse>> GetAllAsync();
         Task<RecipeIngredientResponse?> GetByIdAsync(Guid id);
+        Task<RecipeIngredientResponse?> GetByRecipeIdAsync(Guid recipeId);
         Task<RecipeIngredientResponse> AddAsync(RecipeIngredientRequest newRecipeIngredientRequest);
         Task<RecipeIngredientResponse> UpdateByIdAsync(Guid id, RecipeIngredientRequest updatedRecipeIngredientRequest);
         Task DeleteByIdAsync(Guid id);

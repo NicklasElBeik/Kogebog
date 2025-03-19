@@ -37,6 +37,15 @@ namespace Kogebog.API.Repository.Repositories
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
+        public async Task<RecipeIngredient?> GetByRecipeIdAsync(Guid recipeId)
+        {
+            return await _context.RecipeIngredients
+                .Include(r => r.Ingredient)
+                .Include(r => r.Recipe)
+                .Include(r => r.Unit)
+                .FirstOrDefaultAsync(r => r.RecipeId == recipeId);
+        }
+
         public async Task<RecipeIngredient> AddAsync(RecipeIngredient newRecipeIngredient)
         {
             await _context.RecipeIngredients.AddAsync(newRecipeIngredient);

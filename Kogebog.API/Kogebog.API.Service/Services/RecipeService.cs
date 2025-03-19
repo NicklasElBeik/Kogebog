@@ -90,6 +90,12 @@ namespace Kogebog.API.Service.Services
             return recipe is null ? null : MapRecipeToRecipeResponse(recipe);
         }
 
+        public async Task<RecipeResponse?> GetByProfileIdAsync(Guid profileId)
+        {
+            var recipe = await _recipeRepository.GetByProfileIdAsync(profileId);
+            return recipe is null ? null : MapRecipeToRecipeResponse(recipe);
+        }
+
         public async Task<RecipeResponse> AddAsync(RecipeRequest newRecipeRequest)
         {
             var recipe = MapRecipeRequestToRecipe(newRecipeRequest);

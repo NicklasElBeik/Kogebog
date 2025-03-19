@@ -78,6 +78,12 @@ namespace Kogebog.API.Service.Services
             return recipeIngredient is null ? null : MapRecipeIngredientToRecipeIngredientResponse(recipeIngredient);
         }
 
+        public async Task<RecipeIngredientResponse?> GetByRecipeIdAsync(Guid recipeId)
+        {
+            var recipeIngredient = await _recipeIngredientRepository.GetByRecipeIdAsync(recipeId);
+            return recipeIngredient is null ? null : MapRecipeIngredientToRecipeIngredientResponse(recipeIngredient);
+        }
+
         public async Task<RecipeIngredientResponse> AddAsync(RecipeIngredientRequest newRecipeIngredientRequest)
         {
             var recipeIngredient = MapRecipeIngredientRequestToRecipeIngredient(newRecipeIngredientRequest);
