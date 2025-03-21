@@ -13,6 +13,7 @@ namespace Kogebog.API.Repository.Repositories.Interfaces
         Task<RecipeIngredient?> GetByIdAsync(Guid id);
         Task<RecipeIngredient?> GetByRecipeIdAsync(Guid recipeId);
         Task<RecipeIngredient> AddAsync(RecipeIngredient newRecipeIngredient);
+        Task<List<RecipeIngredient>> AddRangeAsync(List<RecipeIngredient> newRecipeIngredients);
         Task<RecipeIngredient> UpdateByIdAsync(Guid id, RecipeIngredient updatedRecipeIngredient);
         Task DeleteByIdAsync(Guid id);
     }

@@ -36,7 +36,7 @@ namespace Kogebog.API.ASP.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add([FromBody] RecipeRequest newRecipe)
+        public async Task<IActionResult> Add([FromForm] RecipeRequest newRecipe)
         {
             try
             {
@@ -89,7 +89,7 @@ namespace Kogebog.API.ASP.Controllers
         }
 
         [HttpPut("{recipeId}")]
-        public async Task<IActionResult> UpdateById([FromRoute] Guid recipeId, [FromBody] RecipeRequest updateRecipe)
+        public async Task<IActionResult> UpdateById([FromRoute] Guid recipeId, [FromForm] RecipeRequest updateRecipe)
         {
             try
             {

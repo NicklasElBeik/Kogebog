@@ -3,12 +3,11 @@ import 'package:kogebog_flutter/services/dio_service.dart';
 
 class IngredientService {
 
-  String baseUrl = 'ingredient';
+  String baseUrl = '/ingredient';
 
   Future<List<Ingredient>> getAll() async {
     try {
-      final response = await DioService.dio.get(baseUrl);
-
+      final response = await DioService.dioJson.get(baseUrl);
       if (response.statusCode == 200) {
         return (response.data as List).map((json) => Ingredient.fromJson(json)).toList();
       }

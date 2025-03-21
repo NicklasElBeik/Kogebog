@@ -2,6 +2,7 @@
 using Kogebog.API.Repository.Repositories.Interfaces;
 using Kogebog.API.Service.DTO.IngredientDTO;
 using Kogebog.API.Service.DTO.RecipeDTO;
+using Kogebog.API.Service.DTO.RecipeIngredientDTO;
 using Kogebog.API.Service.DTO.UnitDTO;
 using Kogebog.API.Service.Services.Interfaces;
 using System;
@@ -16,10 +17,12 @@ namespace Kogebog.API.Service.Services
     public class RecipeService : IRecipeService
     {
         private readonly IRecipeRepository _recipeRepository;
+        private readonly IRecipeIngredientRepository _recipeIngredientRepository;
 
-        public RecipeService(IRecipeRepository recipeRepository)
+        public RecipeService(IRecipeRepository recipeRepository, IRecipeIngredientRepository recipeIngredientRepository)
         {
             _recipeRepository = recipeRepository;
+            _recipeIngredientRepository = recipeIngredientRepository;
         }
 
         public RecipeResponse MapRecipeToRecipeResponse(Recipe recipe)
@@ -27,6 +30,7 @@ namespace Kogebog.API.Service.Services
             return new RecipeResponse
             {
                 Id = recipe.Id,
+                Name = recipe.Name,
                 Image = recipe.Image,
                 AmountOfServings = recipe.AmountOfServings,
                 Profile = recipe.Profile != null ? new RecipeProfileResponse
@@ -40,7 +44,8 @@ namespace Kogebog.API.Service.Services
                     Quantity = recipeIngredient.Quantity,
                     Ingredient = recipeIngredient.Ingredient != null ? new IngredientResponse
                     {
-
+                        Id = recipeIngredient.Ingredient.Id,
+                        Name = recipeIngredient.Ingredient.Name
                     } : null,
                     Unit = recipeIngredient.Unit != null ? new UnitResponse
                     {
@@ -61,6 +66,7 @@ namespace Kogebog.API.Service.Services
             {
                 Name = recipeRequest.Name,
                 AmountOfServings = recipeRequest.AmountOfServings,
+                ProfileId = recipeRequest.ProfileId
             };
 
             if (recipeRequest.Image != null && recipeRequest.Image.Length > 0)
@@ -78,6 +84,17 @@ namespace Kogebog.API.Service.Services
             return recipe;
         }
 
+        public List<RecipeIngredient> MapRecipeRecipeIngredientRequestToRecipeIngredientList(List<RecipeRecipeIngredientRequest> recipeRecipeIngredientRequests, Guid recipeId)
+        {
+            return recipeRecipeIngredientRequests.Select(recipeRecipeIngredientRequest => new RecipeIngredient
+            {
+                Quantity = recipeRecipeIngredientRequest.Quantity,
+                UnitId = recipeRecipeIngredientRequest.UnitId,
+                RecipeId = recipeId,
+                IngredientId = recipeRecipeIngredientRequest.IngredientId,
+            }).ToList();
+        }
+
         public async Task<IEnumerable<RecipeResponse>> GetAllAsync()
         {
             IEnumerable<Recipe> recipes = await _recipeRepository.GetAllAsync();
@@ -90,24 +107,54 @@ namespace Kogebog.API.Service.Services
             return recipe is null ? null : MapRecipeToRecipeResponse(recipe);
         }
 
-        public async Task<RecipeResponse?> GetByProfileIdAsync(Guid profileId)
+        public async Task<IEnumerable<RecipeResponse>> GetByProfileIdAsync(Guid profileId)
         {
-            var recipe = await _recipeRepository.GetByProfileIdAsync(profileId);
-            return recipe is null ? null : MapRecipeToRecipeResponse(recipe);
+            var recipes = await _recipeRepository.GetByProfileIdAsync(profileId);
+            return recipes.Select(MapRecipeToRecipeResponse).ToList();
         }
 
         public async Task<RecipeResponse> AddAsync(RecipeRequest newRecipeRequest)
         {
             var recipe = MapRecipeRequestToRecipe(newRecipeRequest);
             var insertedRecipe = await _recipeRepository.AddAsync(recipe);
-            return MapRecipeToRecipeResponse(insertedRecipe);
+
+            await _recipeIngredientRepository.AddRangeAsync(MapRecipeRecipeIngredientRequestToRecipeIngredientList(newRecipeRequest.RecipeIngredients, insertedRecipe.Id));
+
+            var finishedRecipe = await _recipeRepository.GetByIdAsync(insertedRecipe.Id);
+
+            if (finishedRecipe is null)
+                throw new Exception("Recipe wasn't found.");
+
+            return MapRecipeToRecipeResponse(finishedRecipe);
         }
 
         public async Task<RecipeResponse> UpdateByIdAsync(Guid id, RecipeRequest updatedRecipeRequest)
         {
             var recipe = MapRecipeRequestToRecipe(updatedRecipeRequest);
             var updatedRecipe = await _recipeRepository.UpdateByIdAsync(id, recipe);
-            return MapRecipeToRecipeResponse(updatedRecipe);
+
+            var recipeIngredientsToCreate = updatedRecipeRequest.RecipeIngredients.Where(x => !Guid.TryParse(x.Id, out var _)).ToList();
+
+            await _recipeIngredientRepository.AddRangeAsync(MapRecipeRecipeIngredientRequestToRecipeIngredientList(recipeIngredientsToCreate, updatedRecipe.Id));
+
+            var recipeIngredientsToDelete = updatedRecipeRequest.RecipeIngredients
+                .Where(x => Guid.TryParse(x.Id, out var guidId) &&
+                            !updatedRecipe.RecipeIngredients.Any(y => y.Id == guidId))
+                .ToList();
+
+            foreach (var recipeIngredient in recipeIngredientsToDelete)
+            {
+                if(Guid.TryParse(recipeIngredient.Id, out var guidId)) {
+                    await _recipeIngredientRepository.DeleteByIdAsync(guidId);
+                }
+            }
+
+            var finishedRecipe = await _recipeRepository.GetByIdAsync(updatedRecipe.Id);
+
+            if (finishedRecipe is null)
+                throw new Exception("Recipe wasn't found.");
+
+            return MapRecipeToRecipeResponse(finishedRecipe);
         }
 
         public async Task DeleteByIdAsync(Guid id)

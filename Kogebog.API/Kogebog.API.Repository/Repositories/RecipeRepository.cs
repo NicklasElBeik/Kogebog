@@ -24,6 +24,9 @@ namespace Kogebog.API.Repository.Repositories
             return await _context.Recipes
                 .Include(r => r.Profile)
                 .Include(r => r.RecipeIngredients)
+                    .ThenInclude(r => r.Ingredient)
+                .Include(r => r.RecipeIngredients)
+                    .ThenInclude(r => r.Unit)
                 .ToListAsync();
         }
 
@@ -32,15 +35,22 @@ namespace Kogebog.API.Repository.Repositories
             return await _context.Recipes
                 .Include(r => r.Profile)
                 .Include(r => r.RecipeIngredients)
+                    .ThenInclude(r => r.Ingredient)
+                .Include(r => r.RecipeIngredients)
+                    .ThenInclude(r => r.Unit)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        public async Task<Recipe?> GetByProfileIdAsync(Guid id)
+        public async Task<IEnumerable<Recipe>> GetByProfileIdAsync(Guid id)
         {
             return await _context.Recipes
                 .Include(r => r.Profile)
                 .Include(r => r.RecipeIngredients)
-                .FirstOrDefaultAsync(r => r.ProfileId == id);
+                    .ThenInclude(r => r.Ingredient)
+                .Include(r => r.RecipeIngredients)
+                    .ThenInclude(r => r.Unit)
+                .Where(r => r.ProfileId == id)
+                .ToListAsync();
         }
 
         public async Task<Recipe> AddAsync(Recipe newRecipe)

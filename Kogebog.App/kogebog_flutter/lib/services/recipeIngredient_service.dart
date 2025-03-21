@@ -5,16 +5,16 @@ class RecipeIngredientService {
   
   String baseUrl = '/recipeingredient';
 
-  Future<List<RecipeIngredient>> getByProfileId(String recipeId) async {
+  Future<List<RecipeIngredient>> getByRecipeId(String recipeId) async {
     try {
-      final response = await DioService.dio.get('$baseUrl/recipe/$recipeId');
+      final response = await DioService.dioJson.get('$baseUrl/recipe/$recipeId');
 
       if (response.statusCode == 200) {
         return (response.data as List).map((json) => RecipeIngredient.fromJson(json)).toList();
       }
     }
     catch (e) {
-      print("Error fetching ingredients: $e");
+      print("Error fetching recipeIngredient: $e");
     }
 
     return [];
@@ -22,7 +22,7 @@ class RecipeIngredientService {
 
   Future<RecipeIngredient> create(RecipeIngredient recipeIngredient) async {
     try {
-      final response = await DioService.dio.post(baseUrl, data: recipeIngredient);
+      final response = await DioService.dioJson.post(baseUrl, data: recipeIngredient);
 
       return response.data;
     }
@@ -35,7 +35,7 @@ class RecipeIngredientService {
 
   Future<RecipeIngredient> updateById(String id, RecipeIngredient recipeIngredient) async {
     try {
-      final response = await DioService.dio.put('$baseUrl/$id', data: recipeIngredient);
+      final response = await DioService.dioJson.put('$baseUrl/$id', data: recipeIngredient);
 
       return response.data;
     }
@@ -48,7 +48,7 @@ class RecipeIngredientService {
 
   Future<void> deleteById(String id) async {
     try {
-      await DioService.dio.delete('$baseUrl/$id');
+      await DioService.dioJson.delete('$baseUrl/$id');
     }
     catch (e) {
       print("Error creating recipeIngredient: $e");

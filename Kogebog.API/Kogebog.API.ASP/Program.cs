@@ -61,6 +61,24 @@ namespace Kogebog.API.ASP
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
+            app.Use(async (context, next) =>
+            {
+                // Enable buffering of the request body so it can be read multiple times
+                context.Request.EnableBuffering();
+
+                // Create a stream reader to read the request body
+                var reader = new StreamReader(context.Request.Body);
+                var requestBody = await reader.ReadToEndAsync();
+
+                // Log the request body (you can also parse this if it's form data)
+                Console.WriteLine($"Incoming Request: {context.Request.Method} {context.Request.Path}");
+                Console.WriteLine($"Request Body: {requestBody}");
+
+                // Reset the request body position to 0, so it can be read by other middleware/handlers
+                context.Request.Body.Seek(0, SeekOrigin.Begin);
+
+                await next.Invoke();
+            });
 
             app.UseCors("Allow");
 

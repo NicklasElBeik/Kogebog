@@ -10,7 +10,7 @@ namespace Kogebog.API.Service.DTO.ProfileDTO
     public class ProfileRequest
     {
         [Required]
-        [StringLength(30, ErrorMessage = "Name cannot be longer than 30 chars")]
+        [StringLength(30, MinimumLength = 1, ErrorMessage = "Name cannot be longer than 30 chars")]
         public string Name { get; set; } = string.Empty;
     }
 }

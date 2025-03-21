@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,15 +18,17 @@ import 'package:kogebog_flutter/providers/recipe_provider.dart';
 import 'package:kogebog_flutter/providers/unit_provider.dart';
 import 'package:kogebog_flutter/widgets/modern_button.dart';
 
-class RecipeFormView extends ConsumerStatefulWidget {
-  const RecipeFormView({super.key});
+class RecipeFormEditView extends ConsumerStatefulWidget {
+  final String recipeId;
+
+  const RecipeFormEditView({super.key, required this.recipeId});
 
   @override
-  RecipeFormViewState createState() => RecipeFormViewState();
+  RecipeFormEditViewState createState() => RecipeFormEditViewState();
 }
 
-class RecipeFormViewState extends ConsumerState<RecipeFormView> {
-  final _nameController = TextEditingController();
+class RecipeFormEditViewState extends ConsumerState<RecipeFormEditView> {
+  late TextEditingController _nameController;
   List<RecipeIngredient> recipeIngredients = [];
   File? _image;
   int servings = 2;
@@ -34,6 +37,18 @@ class RecipeFormViewState extends ConsumerState<RecipeFormView> {
   Unit? currentUnit;
   bool isValid = false;
   
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the controllers with the current recipe values
+    final recipe = ref.read(recipeProvider).firstWhereOrNull((r) => r.id == widget.recipeId);
+    if (recipe != null) {
+      _nameController = TextEditingController(text: recipe.name);
+      servings = recipe.amountOfServings;
+      recipeIngredients = recipe.recipeIngredients;
+    }
+  }
 
   bool get isFormValid {
     return _nameController.text.isNotEmpty &&
@@ -71,20 +86,26 @@ class RecipeFormViewState extends ConsumerState<RecipeFormView> {
     _checkValidInputsForIngredient();
   }
 
-  Future<void> _saveRecipe() async {
-    final profileId = ref.read(profileProvider);
-    
-    Recipe recipe = Recipe(
-      id: '',
-      name: _nameController.text,
-      amountOfServings: servings,
-      image: _image?.path,
-      profileId: profileId,
-      recipeIngredients: recipeIngredients,
-    );
+  Future<void> _saveChanges(String recipeId) async {
+    final updatedName = _nameController.text;
+    final updatedServings = servings;
 
-    ref.read(recipeProvider.notifier).createRecipe(recipe);
-    context.pop(); // Go back to recipe list
+    final recipe = ref.read(recipeProvider).firstWhereOrNull((r) => r.id == recipeId);
+
+    if (recipe != null) {
+      Recipe updatedRecipe = Recipe(
+        id: recipeId,
+        name: updatedName,
+        amountOfServings: updatedServings,
+        profileId: recipe.profile?.id,
+        recipeIngredients: recipeIngredients.map((ri) => 
+          RecipeIngredient(id: ri.id, quantity: ri.quantity, unitId: ri.unit?.id, ingredientId: ri.ingredient?.id )
+        ).toList(),
+      );
+
+      ref.read(recipeProvider.notifier).updateRecipe(updatedRecipe);
+      context.pop();
+    }
   }
 
   void _checkValidInputsForIngredient() {
@@ -297,7 +318,7 @@ class RecipeFormViewState extends ConsumerState<RecipeFormView> {
             SizedBox(height: 20),
 
             // Ingredient List (with Quantity and Unit)
-            Text("Added Ingredients", style: GoogleFonts.lato(fontSize: 20)),
+            Text("Ingredienser", style: GoogleFonts.lato(fontSize: 20)),
             SizedBox(height: 10),
             Column(
               children: recipeIngredients.map((ingredient) {
@@ -332,7 +353,7 @@ class RecipeFormViewState extends ConsumerState<RecipeFormView> {
         opacity: isFormValid ? 1.0 : 0.0, // Show if valid, hide if invalid
         duration: Duration(milliseconds: 200), // Animation duration
         child: FloatingActionButton.extended(
-          onPressed: isFormValid ? _saveRecipe : null,
+          onPressed: isFormValid ? () => _saveChanges(widget.recipeId) : null,
           label: Text(
             "Gem opskrift",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

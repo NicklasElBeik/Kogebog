@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:kogebog_flutter/models/profile.dart';
 import 'package:kogebog_flutter/services/dio_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,7 +8,7 @@ class ProfileService {
 
   Future<Profile?> create(Profile profile) async {
     try {
-      final response = await DioService.dio.post(baseUrl, data: profile.toJson());
+      final response = await DioService.dioJson.post(baseUrl, data: profile.toJson());
       if (response.statusCode == 200) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('profile_id', response.data['id']);

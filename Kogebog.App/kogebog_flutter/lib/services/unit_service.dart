@@ -7,14 +7,14 @@ class UnitService {
 
   Future<List<Unit>> getAll() async {
     try {
-      final response = await DioService.dio.get(baseUrl);
-
+      final response = await DioService.dioJson.get(baseUrl);
+      
       if (response.statusCode == 200) {
         return (response.data as List).map((json) => Unit.fromJson(json)).toList();
       }
     }
     catch (e) {
-      print("Error fetching ingredients: $e");
+      print("Error fetching units: $e");
     }
 
     return [];

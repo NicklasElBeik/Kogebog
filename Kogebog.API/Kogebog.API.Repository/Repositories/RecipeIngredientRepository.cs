@@ -58,6 +58,14 @@ namespace Kogebog.API.Repository.Repositories
             return recipeIngredient;
         }
 
+        public async Task<List<RecipeIngredient>> AddRangeAsync(List<RecipeIngredient> newRecipeIngredients)
+        {
+            await _context.RecipeIngredients.AddRangeAsync(newRecipeIngredients);
+            await _context.SaveChangesAsync();
+
+            return newRecipeIngredients;
+        }
+
         public async Task<RecipeIngredient> UpdateByIdAsync(Guid id, RecipeIngredient updatedRecipeIngredient)
         {
             var existingRecipeIngredient = await GetByIdAsync(id);
